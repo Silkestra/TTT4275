@@ -65,26 +65,25 @@ def test(data, targets, W):
     return cm, errRate
 
 def trainAndTest(data, features, partitioning, alpha=0.01, iterations=4000):
-    # Remove feature
-    partitioning = [slice(0, 30), slice(30, 50)]
-    X_N, T_N, X_T, T_T = partitionData(data, features, classes, partitioning)
+    # Partition and retrive correct data
+    X_N, T_N, X_T, T_T = getData(data, features, classes, partitioning)
 
     _, W = training(X_N, T_N, alpha, iterations)
 
      # Test for training set
     cm, errRate = test(X_N, T_N, W)
-    plotConfusionMatrix(cm, classes.keys(), f'Training set \n error rate: {(errRate * 100):.2} %')
+    trainFig = plotConfusionMatrix(cm, classes.keys(), f'Training set \n iterations: {iterations}, ' + r'$\alpha$' + f': {alpha} \n error rate: {(errRate * 100):.2} %')
 
     # Test for test set
     cm, errRate = test(X_T, T_T, W)
-    plotConfusionMatrix(cm, classes.keys(), f'Test set \n error rate: {(errRate * 100):.2} %')
-    plt.show()
+    testFig = plotConfusionMatrix(cm, classes.keys(), f'Test set \n iterations: {iterations}, ' + r'$\alpha$' + f': {alpha} \n error rate: {(errRate * 100):.2} %')
+    return trainFig, testFig
 
 ## Plotting functions
 
 def plotConfusionMatrix(cm, classes, title=""):
     
-    fig = plt.figure(figsize=(6,4))
+    fig = plt.figure(figsize=(8,6))
     sn.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes,
                 yticklabels=classes)
     plt.xlabel('Classified')
@@ -94,7 +93,7 @@ def plotConfusionMatrix(cm, classes, title=""):
     return fig
 
 ## Data creating function
-def partitionData(df: pd.DataFrame, features: list, classes: dict, partitioning: list[slice]):
+def getData(df: pd.DataFrame, features: list, classes: dict, partitioning: list[slice]):
     columns = features + ['Species']
 
     data = df[columns].to_numpy()
@@ -120,7 +119,6 @@ def partitionData(df: pd.DataFrame, features: list, classes: dict, partitioning:
     # Add row of ones to match the case for C > 2 -> linear classifier: g = Wx, x = [x^T, 1]^T
     X_N = np.hstack((X_N, np.ones((X_N.shape[0], 1))))
     X_T = np.hstack((X_T, np.ones((X_T.shape[0], 1))))
-    # print(X_N)
     
     return X_N, T_N, X_T, T_T
 
@@ -141,7 +139,7 @@ data = pd.read_csv(datafile, names=columns)
 def task1B():
     # First 30 dataPoints as training, last 20 as test
     partitioning = [slice(0, 30), slice(30, 50)]
-    X_N, T_N, _, _ = partitionData(data, features, classes, partitioning)
+    X_N, T_N, _, _ = getData(data, features, classes, partitioning)
     iterations = 4000
     alphas = [0.1, 0.01, 0.001, 0.0001, 0.00001]
     tests = [training(X_N, T_N, alpha, iterations)[0] for alpha in alphas]
@@ -150,27 +148,25 @@ def task1B():
     for test in tests:
         plt.plot(range(iterations + 1), test)
 
-    plt.legend(alphas)
+    labels = [r'$\alpha$' + f': {alpha}' for alpha in alphas]
+    plt.legend(labels)
+    plt.xlabel('Iterations')
+    plt.ylabel('MSE')
+    plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
     plt.grid(True)
-    plt.show()
 
 def task1C():
     # First 30 dataPoints as training, last 20 as test
+
     partitioning = [slice(0, 30), slice(30, 50)]
-    X_N, T_N, X_T, T_T = partitionData(data, features, classes, partitioning)
+    X_N, T_N, X_T, T_T = getData(data, features, classes, partitioning)
     iterations = 4000
     alpha = 0.01
-    # Find weight matrix
-    _, W = training(X_N, T_N, alpha, iterations)
 
-    # Test for training set
-    cm, errRate = test(X_N, T_N, W)
-    plotConfusionMatrix(cm, classes.keys(), f'Training set \n error rate: {(errRate * 100):.2} %')
+    train, test = trainAndTest(data, features, partitioning, alpha, iterations)
 
-    # Test for test set
-    cm, errRate = test(X_T, T_T, W)
-    plotConfusionMatrix(cm, classes.keys(), f'Test set \n error rate: {(errRate * 100):.2} %')
-    plt.show()
+    train.canvas.manager.set_window_title("training, first 30 last 20")
+    test.canvas.manager.set_window_title("testing, first 30 last 20")
 
 def task1D():
     # Last 30 dataPoints as training, first 20 as test
@@ -179,7 +175,10 @@ def task1D():
     iterations = 4000
     alpha = 0.01
 
-    trainAndTest(data, features, partitioning, alpha, iterations)
+    train, test = trainAndTest(data, features, partitioning, alpha, iterations)
+
+    train.canvas.manager.set_window_title("training, last 30 first 20")
+    test.canvas.manager.set_window_title("testing, last 30 first 20")
 
 
 def task2A():
@@ -191,40 +190,55 @@ def task2A():
         sn.histplot(data=data, x=data[feature], kde=True, hue="Species", legend=ax==axs[1,0], ax=ax)
     
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
     # Remove most overlapping feature
-    features.remove('Sepal width')
+    newFeatures = features.copy()
+    newFeatures.remove('Sepal width')
 
     ## Train and test data
     # First 30 samples for training, last 20 for test
     partitioning = [slice(0, 30), slice(30, 50)]
     iterations = 4000
+    # iterations = 2000
     alpha = 0.01
 
-    trainAndTest(data, features, partitioning, alpha, iterations)
+    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+
+    train.canvas.manager.set_window_title("training, one features removed")
+    test.canvas.manager.set_window_title("testing, one features removed")
 
 def task2B():
     partitioning = [slice(0, 30), slice(30, 50)]
     iterations = 4000
+    # iterations = 2000
     alpha = 0.01
 
     # Remove two most overlapping features
-    features.remove('Sepal width')
-    features.remove('Sepal length')
+    newFeatures = features.copy()
+    newFeatures.remove('Sepal width')
+    newFeatures.remove('Sepal length')
 
-    trainAndTest(data, features, partitioning, alpha, iterations)
+    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+
+    train.canvas.manager.set_window_title("training, two features removed")
+    test.canvas.manager.set_window_title("testing, two features removed")
 
     # Remove two most overlapping features
-    features.remove('Petal length')
-    trainAndTest(data, features, partitioning, alpha, iterations)
+    newFeatures.remove('Petal length')
+    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+
+    train.canvas.manager.set_window_title("training, three features removed")
+    test.canvas.manager.set_window_title("testing, three features removed")
 
 
 
-
+## Choose which task to run
 # task1B()
 # task1C()
 # task1D()
 # task2A()
-task2B()
+# task2B()
+
+plt.show()
 
