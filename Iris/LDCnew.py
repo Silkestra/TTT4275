@@ -31,15 +31,16 @@ def trainingStep(data, targets, W, alpha):
 
 ##General training and test functions
 
-def training(X_N, T_N, alpha, iterations):
-    C = len(T_N[0])
-    D = len(X_N[0])
+def training(X_D, T_D, alpha, iterations):
+    C = len(T_D[0])
+    D = len(X_D[0])
     W0 = np.zeros((C, D))
     W = [W0]
-    MSEList = [MSE(X_N, T_N, W0)]
+    
+    MSEList = [MSE(X_D, T_D, W0)]
     for i in range(iterations):
-        W.append(W[i] - alpha * gradWMSE(X_N, T_N, W[i]))
-        MSEList.append(MSE(X_N, T_N, W[i]))
+        W.append(W[i] - alpha * gradWMSE(X_D, T_D, W[i]))
+        MSEList.append(MSE(X_D, T_D, W[i]))
     
     return MSEList, W[-1]
 
@@ -66,12 +67,14 @@ def test(data, targets, W):
 
 def trainAndTest(data, features, partitioning, alpha=0.01, iterations=4000):
     # Partition and retrive correct data
-    X_N, T_N, X_T, T_T = getData(data, features, classes, partitioning)
+    X_D, T_D, X_T, T_T = getData(data, features, classes, partitioning)
 
-    _, W = training(X_N, T_N, alpha, iterations)
+    _, W = training(X_D, T_D, alpha, iterations)
+
+    print(W)
 
      # Test for training set
-    cm, errRate = test(X_N, T_N, W)
+    cm, errRate = test(X_D, T_D, W)
     trainFig = plotConfusionMatrix(cm, classes.keys(), f'Training set \n iterations: {iterations}, ' + r'$\alpha$' + f': {alpha} \n error rate: {(errRate * 100):.2} %')
 
     # Test for test set
@@ -109,19 +112,20 @@ def getData(df: pd.DataFrame, features: list, classes: dict, partitioning: list[
     testData = np.concatenate((setosa[test], versicolor[test], virginica[test]))
 
     # make targets for each datapoint (_N for training and _T for test)
-    T_N = np.array([classes[data[-1]] for data in trainingData])
+    T_D = np.array([classes[data[-1]] for data in trainingData])
     T_T = np.array([classes[data[-1]] for data in testData])
 
     # remove species information from datapoints
-    X_N = trainingData[:,:-1].astype(np.float64)
+    X_D = trainingData[:,:-1].astype(np.float64)
     X_T = testData[:,:-1].astype(np.float64)
 
     # Add row of ones to match the case for C > 2 -> linear classifier: g = Wx, x = [x^T, 1]^T
-    X_N = np.hstack((X_N, np.ones((X_N.shape[0], 1))))
+    X_D = np.hstack((X_D, np.ones((X_D.shape[0], 1))))
     X_T = np.hstack((X_T, np.ones((X_T.shape[0], 1))))
     
-    return X_N, T_N, X_T, T_T
+    return X_D, T_D, X_T, T_T
 
+## Saving function
 def saveFigsAsPDF(figures, names: list[str], task: str, dirr="Plots/"):
     saveNames = [task + "_" + name + ".pdf" for name in names]
 
@@ -145,10 +149,10 @@ data = pd.read_csv(datafile, names=columns)
 def task1B(save=False):
     # First 30 dataPoints as training, last 20 as test
     partitioning = [slice(0, 30), slice(30, 50)]
-    X_N, T_N, _, _ = getData(data, features, classes, partitioning)
+    X_D, T_D, _, _ = getData(data, features, classes, partitioning)
     iterations = 4000
     alphas = [0.1, 0.01, 0.001, 0.0001, 0.00001]
-    tests = [training(X_N, T_N, alpha, iterations)[0] for alpha in alphas]
+    tests = [training(X_D, T_D, alpha, iterations)[0] for alpha in alphas]
 
     # Plotting
     fig = plt.figure()
@@ -158,8 +162,9 @@ def task1B(save=False):
     labels = [r'$\alpha$' + f': {alpha}' for alpha in alphas]
     plt.legend(labels)
     plt.xlabel('Iterations')
-    plt.ylabel('MSE')
-    plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
+    plt.ylabel('Mean square error')
+    # plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
+    plt.title('Training of LDC')
     plt.grid(True)
 
     if save:
@@ -173,7 +178,7 @@ def task1C(save=False):
     # First 30 dataPoints as training, last 20 as test
 
     partitioning = [slice(0, 30), slice(30, 50)]
-    X_N, T_N, X_T, T_T = getData(data, features, classes, partitioning)
+    X_D, T_D, X_T, T_T = getData(data, features, classes, partitioning)
     iterations = 4000
     alpha = 0.01
 
@@ -275,14 +280,14 @@ def task2B(save=False):
     return
 
 # Toggle saving of figures
-save = True
+save = False
 
 ## Choose which task to run
-task1B(save)
+# task1B(save)
 task1C(save)
-task1D(save)
-task2A(save)
-task2B(save)
+# task1D(save)
+# task2A(save)
+# task2B(save)
 
 # plt.show()
 
