@@ -122,6 +122,12 @@ def getData(df: pd.DataFrame, features: list, classes: dict, partitioning: list[
     
     return X_N, T_N, X_T, T_T
 
+def saveFigsAsPDF(figures, names: list[str], task: str, dirr="Plots/"):
+    saveNames = [task + "_" + name + ".pdf" for name in names]
+
+    for fig, saveName in zip(figures, saveNames):
+        fig.savefig(dirr + saveName)
+
 
 ## class to target mapping
 classes = {}
@@ -136,7 +142,7 @@ datafile = "Data/iris.data"
 data = pd.read_csv(datafile, names=columns)
 
 
-def task1B():
+def task1B(save=False):
     # First 30 dataPoints as training, last 20 as test
     partitioning = [slice(0, 30), slice(30, 50)]
     X_N, T_N, _, _ = getData(data, features, classes, partitioning)
@@ -145,6 +151,7 @@ def task1B():
     tests = [training(X_N, T_N, alpha, iterations)[0] for alpha in alphas]
 
     # Plotting
+    fig = plt.figure()
     for test in tests:
         plt.plot(range(iterations + 1), test)
 
@@ -155,7 +162,14 @@ def task1B():
     plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
     plt.grid(True)
 
-def task1C():
+    if save:
+        figs = [fig]    
+        # Name for figures when saving 
+        plotNames = ["alphaTraining"]
+        saveFigsAsPDF(figs, plotNames, "task1B")
+    return
+
+def task1C(save=False):
     # First 30 dataPoints as training, last 20 as test
 
     partitioning = [slice(0, 30), slice(30, 50)]
@@ -163,34 +177,49 @@ def task1C():
     iterations = 4000
     alpha = 0.01
 
-    train, test = trainAndTest(data, features, partitioning, alpha, iterations)
+    trainCovMatFig, testCovMatFig = trainAndTest(data, features, partitioning, alpha, iterations)
 
-    train.canvas.manager.set_window_title("training, first 30 last 20")
-    test.canvas.manager.set_window_title("testing, first 30 last 20")
+    trainCovMatFig.canvas.manager.set_window_title("training, first 30 last 20")
+    testCovMatFig.canvas.manager.set_window_title("testing, first 30 last 20")
 
-def task1D():
+    if save:
+        figs = [trainCovMatFig, testCovMatFig]  
+        # Name for figures when saving 
+        plotNames = ["train", "test"]
+        saveFigsAsPDF(figs, plotNames, "task1C")
+    return
+    
+
+def task1D(save=False):
     # Last 30 dataPoints as training, first 20 as test
     partitioning = [slice(20, 50), slice(0, 20)]
 
     iterations = 4000
     alpha = 0.01
 
-    train, test = trainAndTest(data, features, partitioning, alpha, iterations)
+    trainCovMatFig, testCovMatFig = trainAndTest(data, features, partitioning, alpha, iterations)
 
-    train.canvas.manager.set_window_title("training, last 30 first 20")
-    test.canvas.manager.set_window_title("testing, last 30 first 20")
+    trainCovMatFig.canvas.manager.set_window_title("training, last 30 first 20")
+    testCovMatFig.canvas.manager.set_window_title("testing, last 30 first 20")
+
+    if save:
+        figs = [trainCovMatFig, testCovMatFig]  
+        # Name for figures when saving 
+        plotNames = ["train", "test"]
+        saveFigsAsPDF(figs, plotNames, "task1D")
+    return
 
 
-def task2A():
+
+def task2A(save=False):
     # Make histogram plots
     sn.set_theme(style="whitegrid")
 
-    fig, axs = plt.subplots(2, 2)
+    histFig, axs = plt.subplots(2, 2)
     for feature, ax in zip(features, axs.flat):
         sn.histplot(data=data, x=data[feature], kde=True, hue="Species", legend=ax==axs[1,0], ax=ax)
     
     plt.tight_layout()
-    # plt.show()
 
     # Remove most overlapping feature
     newFeatures = features.copy()
@@ -203,12 +232,19 @@ def task2A():
     # iterations = 2000
     alpha = 0.01
 
-    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+    trainCovMatFig, testCovMatFig = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
 
-    train.canvas.manager.set_window_title("training, one features removed")
-    test.canvas.manager.set_window_title("testing, one features removed")
+    trainCovMatFig.canvas.manager.set_window_title("training, one features removed")
+    testCovMatFig.canvas.manager.set_window_title("testing, one features removed")
 
-def task2B():
+    if save:
+        figs = [histFig, trainCovMatFig, testCovMatFig]  
+        # Name for figures when saving 
+        plotNames = ["hist", "train", "test"]
+        saveFigsAsPDF(figs, plotNames, "task2A")
+    return
+
+def task2B(save=False):
     partitioning = [slice(0, 30), slice(30, 50)]
     iterations = 4000
     # iterations = 2000
@@ -219,26 +255,36 @@ def task2B():
     newFeatures.remove('Sepal width')
     newFeatures.remove('Sepal length')
 
-    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+    trainCovMatFigA, testCovMatFigA = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
 
-    train.canvas.manager.set_window_title("training, two features removed")
-    test.canvas.manager.set_window_title("testing, two features removed")
+    trainCovMatFigA.canvas.manager.set_window_title("training, two features removed")
+    testCovMatFigA.canvas.manager.set_window_title("testing, two features removed")
 
-    # Remove two most overlapping features
+    # Remove three most overlapping features
     newFeatures.remove('Petal length')
-    train, test = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
+    trainCovMatFigB, testCovMatFigB = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
 
-    train.canvas.manager.set_window_title("training, three features removed")
-    test.canvas.manager.set_window_title("testing, three features removed")
+    trainCovMatFigB.canvas.manager.set_window_title("training, three features removed")
+    testCovMatFigB.canvas.manager.set_window_title("testing, three features removed")
 
+    if save:
+        figs = [trainCovMatFigA, testCovMatFigA, trainCovMatFigB, testCovMatFigB]
+        # Name for figures when saving 
+        plotNames = ["trainA", "testA", "trainB", "testB"]
+        saveFigsAsPDF(figs, plotNames, "task2B")
+    return
 
+# Toggle saving of figures
+save = True
 
 ## Choose which task to run
-# task1B()
-# task1C()
-# task1D()
-# task2A()
-# task2B()
+task1B(save)
+task1C(save)
+task1D(save)
+task2A(save)
+task2B(save)
 
-plt.show()
+# plt.show()
+
+
 
