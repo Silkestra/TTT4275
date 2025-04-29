@@ -90,7 +90,7 @@ def plotConfusionMatrix(cm, classes, title=""):
     sn.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes,
                 yticklabels=classes)
     plt.xlabel('Classified')
-    plt.ylabel('True')
+    plt.ylabel('True/label')
     if title != "":
         plt.title(title)
     return fig
@@ -161,7 +161,7 @@ def task1B(save=False):
 
     labels = [r'$\alpha$' + f': {alpha}' for alpha in alphas]
     plt.legend(labels)
-    plt.xlabel('Iterations')
+    plt.xlabel('Number of iterations')
     plt.ylabel('Mean square error')
     # plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
     plt.title('Training of LDC')
@@ -224,6 +224,12 @@ def task2A(save=False):
     for feature, ax in zip(features, axs.flat):
         sn.histplot(data=data, x=data[feature], kde=True, hue="Species", legend=ax==axs[1,0], ax=ax)
     
+
+    # Remove y-axis labels for the right plots
+    axs[0, 1].set_ylabel('')  # Top-right plot
+    axs[1, 1].set_ylabel('')  # Bottom-right plot
+
+
     plt.tight_layout()
 
     # Remove most overlapping feature
@@ -280,14 +286,14 @@ def task2B(save=False):
     return
 
 # Toggle saving of figures
-save = False
+save = True
 
 ## Choose which task to run
-# task1B(save)
+task1B(save)
 task1C(save)
-# task1D(save)
-# task2A(save)
-# task2B(save)
+task1D(save)
+task2A(save)
+task2B(save)
 
 # plt.show()
 
