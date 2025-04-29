@@ -71,8 +71,6 @@ def trainAndTest(data, features, partitioning, alpha=0.01, iterations=4000):
 
     _, W = training(X_D, T_D, alpha, iterations)
 
-    print(W)
-
      # Test for training set
     cm, errRate = test(X_D, T_D, W)
     trainFig = plotConfusionMatrix(cm, classes.keys(), f'Training set \n iterations: {iterations}, ' + r'$\alpha$' + f': {alpha} \n error rate: {(errRate * 100):.2} %')
@@ -295,7 +293,7 @@ task1D(save)
 task2A(save)
 task2B(save)
 
-# plt.show()
+plt.show()
 
 
 
