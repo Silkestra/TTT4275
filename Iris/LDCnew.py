@@ -4,9 +4,7 @@ import seaborn as sn
 import pandas as pd
 from sklearn import metrics
 
-
 ## computing functions
-
 def sigmoid(zk: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-zk))
 
@@ -39,7 +37,7 @@ def training(X_D, T_D, alpha, iterations):
     
     MSEList = [MSE(X_D, T_D, W0)]
     for i in range(iterations):
-        W.append(W[i] - alpha * gradWMSE(X_D, T_D, W[i]))
+        W.append(trainingStep(X_D, T_D, W[i], alpha))
         MSEList.append(MSE(X_D, T_D, W[i]))
     
     return MSEList, W[-1]
@@ -70,8 +68,6 @@ def trainAndTest(data, features, partitioning, alpha=0.01, iterations=4000):
     X_D, T_D, X_T, T_T = getData(data, features, classes, partitioning)
 
     _, W = training(X_D, T_D, alpha, iterations)
-
-    print(W)
 
      # Test for training set
     cm, errRate = test(X_D, T_D, W)
@@ -163,7 +159,6 @@ def task1B(save=False):
     plt.legend(labels)
     plt.xlabel('Number of iterations')
     plt.ylabel('Mean square error')
-    # plt.title('Mean squared error of classifier wrt. \n training set using different ' + r'$\alpha$')
     plt.title('Training of LDC')
     plt.grid(True)
 
@@ -224,12 +219,9 @@ def task2A(save=False):
     for feature, ax in zip(features, axs.flat):
         sn.histplot(data=data, x=data[feature], kde=True, hue="Species", legend=ax==axs[1,0], ax=ax)
     
-
     # Remove y-axis labels for the right plots
-    axs[0, 1].set_ylabel('')  # Top-right plot
-    axs[1, 1].set_ylabel('')  # Bottom-right plot
-
-
+    axs[0, 1].set_ylabel('')
+    axs[1, 1].set_ylabel('')
     plt.tight_layout()
 
     # Remove most overlapping feature
@@ -240,7 +232,6 @@ def task2A(save=False):
     # First 30 samples for training, last 20 for test
     partitioning = [slice(0, 30), slice(30, 50)]
     iterations = 4000
-    # iterations = 2000
     alpha = 0.01
 
     trainCovMatFig, testCovMatFig = trainAndTest(data, newFeatures, partitioning, alpha, iterations)
@@ -258,7 +249,6 @@ def task2A(save=False):
 def task2B(save=False):
     partitioning = [slice(0, 30), slice(30, 50)]
     iterations = 4000
-    # iterations = 2000
     alpha = 0.01
 
     # Remove two most overlapping features
@@ -286,7 +276,7 @@ def task2B(save=False):
     return
 
 # Toggle saving of figures
-save = True
+save = False
 
 ## Choose which task to run
 task1B(save)
@@ -295,7 +285,7 @@ task1D(save)
 task2A(save)
 task2B(save)
 
-# plt.show()
+plt.show()
 
 
 
