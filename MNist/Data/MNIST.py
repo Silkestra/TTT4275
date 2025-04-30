@@ -200,7 +200,7 @@ def task2c(save=False):
     total_prediction, error_rate, correct_predictions = cluster_KNN_classifier(64,1000,7)
     cm = metrics.confusion_matrix(test_labels, total_prediction)
     classes = [str(i) for i in range(10)]
-    confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix KNN with clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
+    confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix 7-NN with clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
     # plt.show()
 
     if save:
