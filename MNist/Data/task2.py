@@ -1,5 +1,5 @@
-from scipy.io import loadmat
 import numpy as np 
+from scipy.io import loadmat
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt 
 import time 
@@ -10,21 +10,6 @@ from sklearn import metrics
 from sklearn.datasets import make_blobs
 import seaborn as sn
 from collections import Counter
-
-
-
-data = loadmat('TTT4275/MNist/Data/data_all.mat')
-training_vector = data['trainv']
-training_labels = data['trainlab'].ravel()
-test_vector = data['testv']
-test_labels = data['testlab'].ravel()
-num_train = int(data['num_train'].item())
-num_test  = int(data['num_test'].item())
-row_size  = int(data['row_size'].item())
-col_size  = int(data['col_size'].item())
-vec_size  = int(data['vec_size'].item())
-num_classes = 10 
-
 
 
 
@@ -126,6 +111,9 @@ def cluster_KNN_classifier(M,chunk_size, K):
     print("Runtime cluster_KNN_classifier:", time.time() - start_time)
     return total_prediction, error_rate, correct_predictions 
 
+
+### Plot and save functions ###
+
 def plotConfusionMatrix(cm, classes, title=""):
     
     fig = plt.figure(figsize=(6,4))
@@ -137,12 +125,25 @@ def plotConfusionMatrix(cm, classes, title=""):
         plt.title(title)
     return fig
 
-def saveFigsAsPDF(figures, names: list[str], task: str, dirr="TTT4275/MNist/Data/Plots/"):
+def saveFigsAsPDF(figures, names: list[str], task: str, dirr="MNist/Data/Plots/"):
     saveNames = [task + "_" + name + ".pdf" for name in names]
 
     for fig, saveName in zip(figures, saveNames):
         fig.savefig(dirr + saveName)
 
+
+
+data = loadmat('MNist/Data/data_all.mat')
+training_vector = data['trainv']
+training_labels = data['trainlab'].ravel()
+test_vector = data['testv']
+test_labels = data['testlab'].ravel()
+num_train = int(data['num_train'].item())
+num_test  = int(data['num_test'].item())
+row_size  = int(data['row_size'].item())
+col_size  = int(data['col_size'].item())
+vec_size  = int(data['vec_size'].item())
+num_classes = 10 
 
 
 ### Task functions ###    
@@ -153,7 +154,7 @@ def task1(save=False):
     cm = metrics.confusion_matrix(test_labels, total_prediction)
     classes = [str(i) for i in range(10)]
     confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix NN without clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
-    plt.show()
+    # plt.show()
 
     misclassified_idx = np.where(total_prediction != test_labels)[0][:3]
     correctly_classified_idx = np.where(total_prediction == test_labels)[0][:3]
@@ -172,7 +173,7 @@ def task1(save=False):
         ax.axis('off')
         ax.set_title(f'True: {test_labels[idx]}')
     plt.tight_layout(rect=[0, 0, 1, 0.95]) 
-    plt.show()
+    # plt.show()
 
 
     if save:
@@ -186,7 +187,7 @@ def task2b(save=False):
     cm = metrics.confusion_matrix(test_labels, total_prediction)
     classes = [str(i) for i in range(10)]
     confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix NN with clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [confusion_matrix,]    
@@ -200,7 +201,7 @@ def task2c(save=False):
     cm = metrics.confusion_matrix(test_labels, total_prediction)
     classes = [str(i) for i in range(10)]
     confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix KNN with clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [confusion_matrix,]    
@@ -214,7 +215,7 @@ def plot_KNN_without_clustering(save=False):
     cm = metrics.confusion_matrix(test_labels, total_prediction)
     classes = [str(i) for i in range(10)]
     confusion_matrix = plotConfusionMatrix(cm, classes, f"Confusion matrix 7-NN without clustering\nChunksize: 1000, Test size: 10000\nError rate = {error_rate * 100:.1f}%")
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [confusion_matrix,]    
@@ -250,7 +251,7 @@ def cluster_centroids_example(save = False):
 
     fig.suptitle("Effect of Initial Centroids on K-means Convergence", fontsize=14)
     plt.tight_layout()
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [fig]     
@@ -279,7 +280,7 @@ def clustering_silhouette(save=False):
     plt.xlabel("M (Clusters per Class)")
     plt.ylabel("Silhouette Score")
     plt.grid(True)
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [fig]     
@@ -302,7 +303,7 @@ def clustering_count_error_rate(save=False):
     plt.xlabel('k (Number of clusters per class)')
     plt.ylabel('Error Rate')
     plt.grid(True)
-    plt.show()
+    # plt.show()
 
     if save:
         figs = [fig]     
@@ -315,10 +316,16 @@ def clustering_count_error_rate(save=False):
 
 ### Task selection ###  
 
-#task1(save=True)
-#task2b(save=True)
-#task2c(save=True)
+task1(save=True)
+task2b(save=True)
+task2c(save=True)
+# Additional result
+plot_KNN_without_clustering(save=True)
+
+
+## Figures used in discussion
 cluster_centroids_example(save=True)
-#clustering_count_error_rate(save=True)
-#clustering_silhouette(save=True)
-#plot_KNN_without_clustering(save=True)
+clustering_count_error_rate(save=True)
+clustering_silhouette(save=True)
+
+plt.show()
